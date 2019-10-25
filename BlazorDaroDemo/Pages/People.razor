@@ -1,10 +1,16 @@
 ﻿@page "/people"
 @using BlazorDaroDemo.Data
+@using BlazorStrap
 @*  @using System.Net.Http
     @inject HttpClient Http *@
 @inject PersonService PersonService
 
-<h3>Coveci</h3>
+<h1>Coveci</h1>
+
+<p>This component demonstrates fetching data from service and Saving the edited Data</p>
+
+@*<button class="btn btn-primary" @onclick="@(() => LiveDemo.Show())">Add Grev</button>
+    <BSButton Color="Color.Primary" OnClick="@(() => LiveDemo.Show())">Launch demo modal</BSButton>*@
 
 @if (people == null)
 {
@@ -20,6 +26,43 @@
 else
 {
     <div class="row">
+        <div class="col">
+            <BSButton Color="Color.Primary" Class="float-right" OnClick="@(() => PersonAddModal.Show())">Add Grev</BSButton>
+            <BSModal @ref="PersonAddModal">
+                <BSModalHeader OnClick="@(() => PersonAddModal.Hide())">Add Customer to the Bank Son</BSModalHeader>
+                <EditForm Model="@personModel" OnValidSubmit="@HandleSubmitPerson">
+                    <BSModalBody>
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group">
+                            <label for="FirstName">FirstName: </label>
+                            <InputText class="form-control" id="FirstName" @bind-Value="@personModel.FirstName" />
+                        </div>
+                        <div class="form-group">
+                            <label for="LastName">LastName: </label>
+                            <InputText class="form-control" id="LastName" @bind-Value="@personModel.LastName" />
+                        </div>
+                        <div class="form-group">
+                            <label for="AccountBalance">AccountBalance: </label>
+                            <InputNumber class="form-control" id="Account Balance" @bind-Value="@personModel.AccountBalance" />
+                        </div>
+                    </BSModalBody>
+
+                    <BSModalFooter>
+                        <BSButton Color="Color.Secondary" OnClick="@(() => PersonAddModal.Hide())">Close</BSButton>
+                        <BSButton Color="Color.Primary" type="submit">Save Changes</BSButton>
+                        @if (saved == true)
+                        {
+                            PersonAddModal.Hide();
+                        }
+                    </BSModalFooter>
+                </EditForm>
+            </BSModal>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+
         @foreach (var person in people)
         {
             <div class="col-lg-6 col-md-12 mb-2">
@@ -105,11 +148,12 @@ else
 
 
 @code {
+    BSModal PersonAddModal;
     List<PersonModel> people;
     PersonModel person;
-
+    private PersonModel personModel = new PersonModel();
     bool isLoading = false;
-    //string url = "people/all";
+    bool saved = false;
 
     private void BuyNow(PersonModel person)
     {
@@ -118,15 +162,25 @@ else
 
     private async Task SaveUser(PersonModel person)
     {
-        PersonService.SavePerson(person);
+        saved = await PersonService.SavePerson(person);
     }
 
     private async Task GetPeople()
     {
         isLoading = true;
-        await Task.Delay(2000);
+        //  await Task.Delay(2000);
 
         people = await PersonService.GetPeople();
         isLoading = false;
+    }
+
+    private async void HandleSubmitPerson()
+    {
+        saved = await PersonService.AddPerson(personModel);
+        if (saved)
+        {
+            PersonAddModal.Hide();
+            GetPeople();
+        }
     }
 }

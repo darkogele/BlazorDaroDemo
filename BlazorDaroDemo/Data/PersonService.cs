@@ -7,23 +7,31 @@ namespace BlazorDaroDemo.Data
 {
     public class PersonService
     {
-        public Task<List<PersonModel>> GetPeople()
+        private readonly IDataRepo _repo;
+
+        public PersonService(IDataRepo repo)
         {
-            var output = new List<PersonModel>
-            {
-                new PersonModel { FirstName = "Daro", LastName = "Gele", AccountBalance = 19.45M },
-                new PersonModel { FirstName = "Mary", LastName = "Johnes", AccountBalance = 105.87M },
-                new PersonModel { FirstName = "John", LastName = "Smith", AccountBalance = 115.45M },
-                new PersonModel { FirstName = "Pero", LastName = "Prcot", AccountBalance = 119.25M },
-            };
-            output.Add(new PersonModel { FirstName = "Andrej", LastName = "Radevski", AccountBalance = 1000 });//Da ne se ljuti bratot :D
-            return Task.FromResult(output);
+            _repo = repo;
+        }
+        public async Task<List<PersonModel>> GetPeople()
+        {
+            var users = await _repo.GetUsers();
+
+            return await Task.FromResult(users.ToList());
         }
 
 
-        public void SavePerson(PersonModel person)
+        public async Task<bool> SavePerson(PersonModel person)
         {
-            //Save Db or something else.
+            //var user = await _repo.GetUser(person.Id);
+            _repo.UpdateUser(person);
+            return await _repo.SaveAll();
+        }
+
+        public async Task<bool> AddPerson(PersonModel person)
+        {
+            _repo.Add(person);
+            return await _repo.SaveAll();
         }
     }
 

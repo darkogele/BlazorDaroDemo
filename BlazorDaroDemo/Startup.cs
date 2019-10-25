@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorDaroDemo.Data;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorDaroDemo
 {
@@ -30,8 +30,9 @@ namespace BlazorDaroDemo
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
-            services.AddSingleton<PersonService>();
-            //services.AddHttpClient();
+            services.AddScoped<PersonService>();
+            services.AddDbContext<DataContext>(c => c.UseSqlite(Configuration.GetConnectionString("CoveciDb")));
+            services.AddScoped<IDataRepo, DataRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
